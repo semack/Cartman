@@ -29,19 +29,20 @@ namespace Cartman.Processor
 
         public async Task StartAsync()
         {
-            var calendars = await FetchCalendarItemsAsync();
+            var calendars = await FetchCalendarsAsync();
 
             IDateTime today = new CalDateTime(DateTime.Today);
-
-            //IDateTime today = new CalDateTime(DateTime.Today.AddDays(-3));
-
             //IDateTime today = new CalDateTime(new DateTime(2019,10,13));
 
             var events = calendars.SelectMany(x => x.Events)
-                .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)));
+                .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)))
+                .ToList();
 
             if (!events.Any())
+            {
+                _logger.LogInformation("Nothing to do.");
                 return;
+            }
 
             var message = new RocketMessage
             {
@@ -52,10 +53,8 @@ namespace Cartman.Processor
             };
 
             var plural = string.Empty;
-
-            if (events.Count() > 1)
+            if (events.Count > 1)
                 plural = "s";
-
             message.Text = message.Text.Replace(MacroVariables.Plural, plural);
 
             foreach (var item in events)
@@ -93,10 +92,12 @@ namespace Cartman.Processor
                 var content = JsonConvert.SerializeObject(message);
 
                 await CallWebHookAsync(content);
+
+                _logger.LogInformation($"A message containing {events.Count} event(s) has been sent successfully.");
             }
         }
 
-        private async Task<CalendarCollection> FetchCalendarItemsAsync()
+        private async Task<CalendarCollection> FetchCalendarsAsync()
         {
             var result = new CalendarCollection();
 

@@ -36,7 +36,11 @@ namespace Cartman
 
             services.Configure<AppSettings>(configuration.GetSection("Settings"));
 
-            services.AddLogging(configure => configure.AddConsole());
+            services.AddLogging(configure =>
+            {
+                configure.AddConfiguration(configuration.GetSection("Logging"));
+                configure.AddConsole();
+            });
 
             services.AddSingleton<CalendarProcessor>();
         }
