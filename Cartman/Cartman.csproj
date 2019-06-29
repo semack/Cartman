@@ -29,7 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="appSettings.json" />
-  </ItemGroup>
+   </ItemGroup>
   <ItemGroup>
     <Content Include="appSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
