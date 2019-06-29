@@ -31,8 +31,7 @@ namespace Cartman.Processor
         {
             var calendars = await FetchCalendarsAsync();
 
-            IDateTime today = new CalDateTime(DateTime.Today.AddDays(-3));
-            //IDateTime today = new CalDateTime(new DateTime(2019,10,13));
+            IDateTime today = new CalDateTime(DateTime.Today);
 
             var events = calendars.SelectMany(x => x.Events)
                 .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)))
@@ -49,7 +48,7 @@ namespace Cartman.Processor
                 UserName = _appSettings.UserName,
                 IconUrl = _appSettings.IconUrl,
                 Text = _appSettings.Text
-                    .Replace(MacroVariables.Date, DateTime.Today.AddDays(1).ToString("D"))
+                    .Replace(MacroVariables.Date, today.AddDays(1).Date.ToString("D"))
             };
 
             var plural = string.Empty;
