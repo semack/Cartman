@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -34,7 +33,9 @@ namespace Cartman.Processor
 
             var calendars = await FetchCalendarItemsAsync();
 
-            IDateTime today = new CalDateTime(DateTime.Today.AddDays(-2));
+            IDateTime today = new CalDateTime(DateTime.Today);
+
+            //IDateTime today = new CalDateTime(new DateTime(2019,10,13));
 
             var events = calendars.SelectMany(x => x.Events)
                 .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)));
@@ -110,8 +111,9 @@ namespace Cartman.Processor
 
                         result.Add(calendar);
                     }
-                    catch (HttpRequestException)
+                    catch (HttpRequestException ex)
                     {
+                        _logger.LogError(ex.Message);
                     }
                 }
             });
