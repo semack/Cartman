@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Cartman
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -25,7 +25,6 @@ namespace Cartman
 
         private static void ConfigureServices(ServiceCollection services)
         {
-
             // build config
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)

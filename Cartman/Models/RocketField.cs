@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Cartman.Processor.Models
+namespace Cartman.Models
 {
     public class RocketField
     {
@@ -8,11 +8,11 @@ namespace Cartman.Processor.Models
         {
             Short = true;
         }
-        [JsonProperty("short")]
-        public bool Short { get; set; }
-        [JsonProperty("title")]
-        public string Title { get; set; }
-        [JsonProperty("value")]
-        public string Value { get; set; }
+
+        [JsonProperty("short")] public bool Short { get; set; }
+
+        [JsonProperty("title")] public string Title { get; set; }
+
+        [JsonProperty("value")] public string Value { get; set; }
     }
 }

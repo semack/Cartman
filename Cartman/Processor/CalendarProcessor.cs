@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Cartman.Configuration;
 using Cartman.Constants;
-using Cartman.Processor.Models;
+using Cartman.Models;
 using HtmlAgilityPack;
 using Ical.Net;
 using Ical.Net.DataTypes;
@@ -16,11 +16,10 @@ using Newtonsoft.Json;
 
 namespace Cartman.Processor
 {
-
     public class CalendarProcessor
     {
-        private readonly ILogger _logger;
         private readonly AppSettings _appSettings;
+        private readonly ILogger _logger;
 
         public CalendarProcessor(ILogger<CalendarProcessor> logger, IOptions<AppSettings> settings)
         {
@@ -30,7 +29,6 @@ namespace Cartman.Processor
 
         public async Task StartAsync()
         {
-
             var calendars = await FetchCalendarItemsAsync();
 
             IDateTime today = new CalDateTime(DateTime.Today);
@@ -50,7 +48,7 @@ namespace Cartman.Processor
                 UserName = _appSettings.UserName,
                 IconUrl = _appSettings.IconUrl,
                 Text = _appSettings.Text
-                .Replace(MacroVariables.Date, DateTime.Today.AddDays(1).ToString("D"))
+                    .Replace(MacroVariables.Date, DateTime.Today.AddDays(1).ToString("D"))
             };
 
             var plural = string.Empty;
@@ -68,23 +66,26 @@ namespace Cartman.Processor
                 if (string.IsNullOrWhiteSpace(imageUrl))
                     imageUrl = _appSettings.DefaultImage;
 
-                var attachment = new RocketAttachment()
+                var attachment = new RocketAttachment
                 {
                     Title = item.Summary,
                     TitleLink = url,
                     MessageLink = url,
                     ImageUrl = imageUrl,
                     Text = item.Description,
-                    Fields = new List<RocketField> {
-                            new RocketField{
-                                Title = item.Summary,
-                                Value = $"[Read]({url}) more about the holiday.",
-                            },
-                            new RocketField{
-                                Title = item.Calendar.Properties["X-WR-CALNAME"].Value.ToString(),
-                                Value = $"[Download]({item.Calendar.Properties["Url"].Value.ToString()}) the calendar."
-                            }
+                    Fields = new List<RocketField>
+                    {
+                        new RocketField
+                        {
+                            Title = item.Summary,
+                            Value = $"[Read]({url}) more about the holiday."
+                        },
+                        new RocketField
+                        {
+                            Title = item.Calendar.Properties["X-WR-CALNAME"].Value.ToString(),
+                            Value = $"[Download]({item.Calendar.Properties["Url"].Value}) the calendar."
                         }
+                    }
                 };
 
                 message.Attachments.Add(attachment);
@@ -97,8 +98,7 @@ namespace Cartman.Processor
 
         private async Task<CalendarCollection> FetchCalendarItemsAsync()
         {
-
-            CalendarCollection result = new CalendarCollection();
+            var result = new CalendarCollection();
 
             _appSettings.CalendarSources.ForEach(url =>
             {
@@ -122,13 +122,12 @@ namespace Cartman.Processor
             return await Task.FromResult(result);
         }
 
-
-
         private async Task CallWebHookAsync(string message)
         {
             using (var client = new HttpClient())
             {
-                var response = await client.PostAsync(_appSettings.WebHookUrl, new StringContent(message, Encoding.UTF8, "application/json"));
+                var response = await client.PostAsync(_appSettings.WebHookUrl,
+                    new StringContent(message, Encoding.UTF8, "application/json"));
                 if (!response.IsSuccessStatusCode)
                     throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}");
             }
@@ -140,12 +139,12 @@ namespace Cartman.Processor
             var document = webGet.Load(url);
 
 
-            string link = (from x in document.DocumentNode.SelectNodes("/html/head").Descendants()
-                           where x.Name == "meta"
-                           && x.Attributes["property"] != null
-                           && x.Attributes["property"].Value == "og:image"
-                           && x.Attributes["content"] != null
-                           select x.Attributes["content"].Value).FirstOrDefault();
+            var link = (from x in document.DocumentNode.SelectNodes("/html/head").Descendants()
+                where x.Name == "meta"
+                      && x.Attributes["property"] != null
+                      && x.Attributes["property"].Value == "og:image"
+                      && x.Attributes["content"] != null
+                select x.Attributes["content"].Value).FirstOrDefault();
 
             return await Task.FromResult(link);
         }
