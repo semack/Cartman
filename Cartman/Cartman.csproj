@@ -29,7 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="appSettings.json" />
-    <None Remove="Templates\rocketChat.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appSettings.json">
