@@ -23,9 +23,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Configuration\" />
-    <Folder Include="Templates\" />
     <Folder Include="Processor\" />
     <Folder Include="Constants\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="appSettings.json" />
@@ -33,9 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="appSettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Templates\rocketChat.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -11,5 +11,9 @@ namespace Cartman.Configuration
         public string WebHookUrl { get; set; }
         public string DataTemplate { get; set; }
         public string DefaultImage { get; set; }
+        public string UserName { get; set; }
+        public string IconUrl { get; set; }
+        public string Text { get; set; }
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Ical.Net;
 
-namespace Cartman.Processor
+namespace Cartman.Processor.Models
 {
     public class CalendarItem
     {

@@ -7,11 +7,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Cartman.Configuration;
 using Cartman.Constants;
+using Cartman.Processor.Models;
 using HtmlAgilityPack;
 using Ical.Net;
 using Ical.Net.DataTypes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Cartman.Processor
 {
@@ -30,31 +32,71 @@ namespace Cartman.Processor
         public async Task StartAsync()
         {
 
-            var calendarItems = await FetchCalendarItemsAsync();
+            var calendars = await FetchCalendarItemsAsync();
 
             IDateTime today = new CalDateTime(DateTime.Today.AddDays(-2));
 
-            foreach (var calItem in calendarItems)
+            var events = calendars.SelectMany(x => x.Events)
+                .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)));
+
+            if (!events.Any())
+                return;
+
+            var message = new RocketMessage
             {
-                var events = calItem.Calendar.Events
-                        .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)));
+                UserName = _appSettings.UserName,
+                IconUrl = _appSettings.IconUrl,
+                Text = _appSettings.Text
+                .Replace(MacroVariables.Date, DateTime.Today.AddDays(1).ToString("D"))
+            };
 
-                foreach (var item in events)
+            var plural = string.Empty;
+
+            if (events.Count() > 1)
+                plural = "s";
+
+            message.Text = message.Text.Replace(MacroVariables.Plural, plural);
+
+            foreach (var item in events)
+            {
+                var url = item.Url.ToString();
+                var imageUrl = await GetImageUrlAsync(url);
+
+                if (string.IsNullOrWhiteSpace(imageUrl))
+                    imageUrl = _appSettings.DefaultImage;
+
+                var attachment = new RocketAttachment()
                 {
+                    Title = item.Summary,
+                    TitleLink = url,
+                    MessageLink = url,
+                    ImageUrl = imageUrl,
+                    Text = item.Description,
+                    Fields = new List<RocketField> {
+                            new RocketField{
+                                Title = item.Summary,
+                                Value = $"[Read]({url}) more about the holiday.",
+                            },
+                            new RocketField{
+                                Title = item.Calendar.Properties["X-WR-CALNAME"].Value.ToString(),
+                                Value = $"[Download]({item.Calendar.Properties["Url"].Value.ToString()}) the calendar."
+                            }
+                        }
+                };
 
-                    var message = await ParseTemplateAsync(item.Summary,
-                        item.Description.Replace("\n\n\n\n", ". "),
-                        item.Url.ToString(),
-                        calItem.Url);
+                message.Attachments.Add(attachment);
 
-                    await CallWebHookAsync(message);
-                }
+                var content = JsonConvert.SerializeObject(message);
+
+                await CallWebHookAsync(content);
             }
         }
 
-        private async Task<IEnumerable<CalendarItem>> FetchCalendarItemsAsync()
+        private async Task<CalendarCollection> FetchCalendarItemsAsync()
         {
-            var result = new List<CalendarItem>();
+
+            CalendarCollection result = new CalendarCollection();
+
             _appSettings.CalendarSources.ForEach(url =>
             {
                 using (var client = new HttpClient())
@@ -62,14 +104,13 @@ namespace Cartman.Processor
                     try
                     {
                         var response = client.GetStringAsync(url).Result;
-                        var item = new CalendarItem
-                        {
-                            Calendar = Calendar.Load(response),
-                            Url = url
-                        };
-                        result.Add(item);
+
+                        var calendar = Calendar.Load(response);
+                        calendar.Properties.Add(new CalendarProperty("Url", url));
+
+                        result.Add(calendar);
                     }
-                    catch(HttpRequestException)
+                    catch (HttpRequestException)
                     {
                     }
                 }
@@ -87,38 +128,6 @@ namespace Cartman.Processor
                 if (!response.IsSuccessStatusCode)
                     throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}");
             }
-        }
-
-
-
-        private async Task<string> ParseTemplateAsync(string name, string description, string url, string calendarDownloadUrl)
-        {
-            var templateFile = _appSettings.DataTemplate;
-
-            var info = new FileInfo(templateFile);
-            if (AppContext.BaseDirectory.Equals($"{info.DirectoryName}/"))
-                templateFile = $"{ AppContext.BaseDirectory}Templates/{templateFile}";
-
-            if (!File.Exists(templateFile))
-                throw new FileNotFoundException("Cannot find template file", templateFile);
-
-            var template = await File.ReadAllTextAsync(templateFile);
-
-            var imageUrl = await GetImageUrlAsync(url);
-
-            if (string.IsNullOrWhiteSpace(imageUrl))
-                imageUrl = _appSettings.DefaultImage;
-
-            var result = template
-                .Replace(MacroVariables.Name, name)
-                .Replace(MacroVariables.Description, description)
-                .Replace(MacroVariables.Url, url)
-                .Replace(MacroVariables.CalendarDownloadUrl, calendarDownloadUrl)
-                .Replace(MacroVariables.ImageUrl, imageUrl);
-
-            _logger.LogDebug(result);
-
-            return result;
         }
 
         private async Task<string> GetImageUrlAsync(string url)
