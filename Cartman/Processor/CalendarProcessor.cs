@@ -33,7 +33,9 @@ namespace Cartman.Processor
 
             var calendars = await FetchCalendarItemsAsync();
 
-            IDateTime today = new CalDateTime(DateTime.Today);
+            //IDateTime today = new CalDateTime(DateTime.Today);
+
+            IDateTime today = new CalDateTime(DateTime.Today.AddDays(-3));
 
             //IDateTime today = new CalDateTime(new DateTime(2019,10,13));
 
