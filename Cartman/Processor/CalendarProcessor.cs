@@ -109,9 +109,9 @@ namespace Cartman.Processor
 
                         result.Add(calendar);
                     }
-                    catch (HttpRequestException)
+                    catch (HttpRequestException ex)
                     {
-                        _logger.LogError($"Can not retrieve calendar data for Url: {url}");
+                        _logger.LogError(ex, $"Can not retrieve calendar data for Url: {url}");
                     }
                 });
             }
