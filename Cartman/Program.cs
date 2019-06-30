@@ -35,7 +35,7 @@ namespace Cartman
             var processor = serviceProvider.GetRequiredService<CalendarProcessor>();
 
             Console.WriteLine(
-                "Cartman. Copyright (c) ONLINICO\r\nPlease use --help or -h key for more information.\r\n");
+                "\r\nCopyright (C) 2019 ONLINICO\r\nPlease use --help or -h key for more information.\r\n");
 
             var eventDate = DateTime.UtcNow.Date;
             if (opts.EventDate.HasValue)
