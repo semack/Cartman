@@ -98,11 +98,12 @@ namespace Cartman.Processor
         {
             var result = new CalendarCollection();
 
-            if (_appSettings.CalendarSources.Any())
+            if (!_appSettings.CalendarSources.Any())
+                return await Task.FromResult(result);
+
+            using (var client = new HttpClient())
             {
-                using (var client = new HttpClient())
-                {
-                    _appSettings.CalendarSources.ForEach(url =>
+                _appSettings.CalendarSources.ForEach(url =>
                 {
                     try
                     {
@@ -118,8 +119,8 @@ namespace Cartman.Processor
                         _logger.LogError($"Can not retrieve calendar data for Url: {url}");
                     }
                 });
-                }
             }
+
             return await Task.FromResult(result);
         }
 
