@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Cartman.Configuration;
 using Cartman.Constants;
@@ -31,7 +32,7 @@ namespace Cartman.Processor
         {
             var calendars = await FetchCalendarsAsync();
 
-            IDateTime today = new CalDateTime(DateTime.Today);
+            IDateTime today = new CalDateTime(DateTime.Today.AddDays(3));
 
             var events = calendars.SelectMany(x => x.Events)
                 .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)))
@@ -65,7 +66,9 @@ namespace Cartman.Processor
                     TitleLink = url,
                     MessageLink = url,
                     ImageUrl = imageUrl,
-                    Text = item.Description,
+                    Text = Regex.Replace(item.Description, "\n{2,}", "\n")
+                        .Replace(_appSettings.SingnatureForRemoval, String.Empty)
+                        .Trim(),
                     Fields = new List<RocketField>
                     {
                         new RocketField
