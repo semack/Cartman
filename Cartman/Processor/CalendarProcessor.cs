@@ -142,7 +142,6 @@ namespace Cartman.Processor
             var webGet = new HtmlWeb();
             var document = webGet.Load(url);
 
-
             var link = (from x in document.DocumentNode.SelectNodes("/html/head").Descendants()
                 where x.Name == "meta"
                       && x.Attributes["property"] != null
