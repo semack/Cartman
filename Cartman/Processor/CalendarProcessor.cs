@@ -40,7 +40,7 @@ namespace Cartman.Processor
 
             if (!events.Any())
             {
-                _logger.LogInformation("Nothing to do.");
+                Console.WriteLine("Nothing to do.");
                 return;
             }
 
@@ -111,7 +111,7 @@ namespace Cartman.Processor
                         result.Add(calendar);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Console.WriteLine($"Can not retrieve calendar data for Url: {url}");
                 }
@@ -133,7 +133,8 @@ namespace Cartman.Processor
                     if (!response.IsSuccessStatusCode)
                         throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}.");
 
-                    Console.WriteLine($"A message is containing {message.Attachments.Count} event(s) has been sent successfully.");
+                    Console.WriteLine(
+                        $"A message is containing {message.Attachments.Count} event(s) has been sent successfully.");
                 }
             }
             catch (HttpRequestException ex)
@@ -148,11 +149,11 @@ namespace Cartman.Processor
             var document = webGet.Load(url);
 
             var link = (from x in document.DocumentNode.SelectNodes("/html/head").Descendants()
-                        where x.Name == "meta"
-                              && x.Attributes["property"] != null
-                              && x.Attributes["property"].Value == "og:image"
-                              && x.Attributes["content"] != null
-                        select x.Attributes["content"].Value).FirstOrDefault();
+                where x.Name == "meta"
+                      && x.Attributes["property"] != null
+                      && x.Attributes["property"].Value == "og:image"
+                      && x.Attributes["content"] != null
+                select x.Attributes["content"].Value).FirstOrDefault();
 
             return await Task.FromResult(link);
         }

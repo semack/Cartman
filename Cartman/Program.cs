@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Cartman.Configuration;
 using Cartman.Processor;
@@ -12,7 +11,7 @@ namespace Cartman
 {
     internal class Options
     {
-        [Option('d', "date", 
+        [Option('d', "date",
             SetName = "date",
             HelpText = "Specifies a checking date for events in the calendar.")]
         public DateTime? EventDate { get; set; }
@@ -23,22 +22,20 @@ namespace Cartman
         public static void Main(string[] args)
         {
             Parser.Default.ParseArguments<Options>(args)
-                    .WithParsed( opts => RunOptionsAndReturnExitCodeAsync(opts).Wait());
+                .WithParsed(opts => RunOptionsAndReturnExitCodeAsync(opts).Wait());
         }
-
 
         private static async Task RunOptionsAndReturnExitCodeAsync(Options opts)
         {
-
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var processor = serviceProvider.GetRequiredService<CalendarProcessor>();
-            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
-            Console.WriteLine("Cartman. Copyright (c) ONLINICO\r\nPlease use --help or -h key for more information.\r\n") ;
+            Console.WriteLine(
+                "Cartman. Copyright (c) ONLINICO\r\nPlease use --help or -h key for more information.\r\n");
 
             var eventDate = DateTime.UtcNow.Date;
             if (opts.EventDate.HasValue)
