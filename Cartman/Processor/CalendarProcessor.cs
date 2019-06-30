@@ -51,11 +51,6 @@ namespace Cartman.Processor
                     .Replace(MacroVariables.Date, today.AddDays(1).Date.ToString("D"))
             };
 
-            var plural = string.Empty;
-            if (events.Count > 1)
-                plural = "s";
-            message.Text = message.Text.Replace(MacroVariables.Plural, plural);
-
             foreach (var item in events)
             {
                 var url = item.Url.ToString();
