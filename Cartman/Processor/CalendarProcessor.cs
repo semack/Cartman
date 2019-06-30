@@ -88,11 +88,9 @@ namespace Cartman.Processor
 
                 message.Attachments.Add(attachment);
 
-                var content = JsonConvert.SerializeObject(message);
+                await SendMessageAsync(message);
 
-                await CallWebHookAsync(content);
-
-                _logger.LogInformation($"A message containing {events.Count} event(s) has been sent successfully.");
+                _logger.LogInformation($"A message is containing {events.Count} event(s) has been sent successfully.");
             }
         }
 
@@ -100,9 +98,11 @@ namespace Cartman.Processor
         {
             var result = new CalendarCollection();
 
-            _appSettings.CalendarSources.ForEach(url =>
+            if (_appSettings.CalendarSources.Any())
             {
                 using (var client = new HttpClient())
+                {
+                    _appSettings.CalendarSources.ForEach(url =>
                 {
                     try
                     {
@@ -113,21 +113,25 @@ namespace Cartman.Processor
 
                         result.Add(calendar);
                     }
-                    catch (HttpRequestException ex)
+                    catch (HttpRequestException)
                     {
-                        _logger.LogError(ex.Message);
+                        _logger.LogError($"Can not retrieve calendar data for Url: {url}");
                     }
+                });
                 }
-            });
+            }
             return await Task.FromResult(result);
         }
 
-        private async Task CallWebHookAsync(string message)
+        private async Task SendMessageAsync(RocketMessage message)
         {
+            var content = JsonConvert.SerializeObject(message);
+
             using (var client = new HttpClient())
             {
                 var response = await client.PostAsync(_appSettings.WebHookUrl,
-                    new StringContent(message, Encoding.UTF8, "application/json"));
+                    new StringContent(content, Encoding.UTF8, "application/json"));
+
                 if (!response.IsSuccessStatusCode)
                     throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}");
             }

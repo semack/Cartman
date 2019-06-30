@@ -14,12 +14,11 @@ namespace Cartman
         {
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
+
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var processor = serviceProvider.GetRequiredService<CalendarProcessor>();
             await processor.StartAsync();
-
-            await Task.CompletedTask;
         }
 
 
@@ -28,7 +27,7 @@ namespace Cartman
             // build config
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appSettings.json", false, true)
+                .AddJsonFile("appSettings.json")
                 .Build();
 
             // setup config
