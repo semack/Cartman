@@ -32,7 +32,7 @@ namespace Cartman.Processor
         {
             var calendars = await FetchCalendarsAsync();
 
-            IDateTime today = new CalDateTime(DateTime.Today.AddDays(3));
+            IDateTime today = new CalDateTime(DateTime.Today);
 
             var events = calendars.SelectMany(x => x.Events)
                 .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)))
