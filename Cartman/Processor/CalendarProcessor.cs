@@ -82,11 +82,11 @@ namespace Cartman.Processor
                 };
 
                 message.Attachments.Add(attachment);
-
-                await SendMessageAsync(message);
-
-                _logger.LogInformation($"A message is containing {events.Count} event(s) has been sent successfully.");
             }
+
+            await SendMessageAsync(message);
+
+            _logger.LogInformation($"A message is containing {events.Count} event(s) has been sent successfully.");
         }
 
         private async Task<CalendarCollection> FetchCalendarsAsync()
