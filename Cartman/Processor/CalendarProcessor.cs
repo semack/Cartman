@@ -28,14 +28,14 @@ namespace Cartman.Processor
             _appSettings = settings.Value;
         }
 
-        public async Task StartAsync()
+        public async Task StartAsync(DateTime eventDate)
         {
             var calendars = await FetchCalendarsAsync();
 
-            IDateTime today = new CalDateTime(DateTime.Today);
+            IDateTime date = new CalDateTime(eventDate);
 
             var events = calendars.SelectMany(x => x.Events)
-                .Where(c => c.DtStart.GreaterThan(today) && c.DtStart.LessThan(today.AddDays(2)))
+                .Where(c => c.DtStart.Equals(date))
                 .ToList();
 
             if (!events.Any())
@@ -49,7 +49,7 @@ namespace Cartman.Processor
                 UserName = _appSettings.UserName,
                 IconUrl = _appSettings.IconUrl,
                 Text = _appSettings.Text
-                    .Replace(MacroVariables.Date, today.AddDays(1).Date.ToString("D"))
+                    .Replace(MacroVariables.Date, eventDate.Date.ToString("D"))
             };
 
             foreach (var item in events)
@@ -88,8 +88,6 @@ namespace Cartman.Processor
             }
 
             await SendMessageAsync(message);
-
-            _logger.LogInformation($"A message is containing {events.Count} event(s) has been sent successfully.");
         }
 
         private async Task<CalendarCollection> FetchCalendarsAsync()
@@ -115,7 +113,7 @@ namespace Cartman.Processor
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Can not retrieve calendar data for Url: {url}");
+                    Console.WriteLine($"Can not retrieve calendar data for Url: {url}");
                 }
             });
 
@@ -125,14 +123,22 @@ namespace Cartman.Processor
         private async Task SendMessageAsync(RocketMessage message)
         {
             var content = JsonConvert.SerializeObject(message);
-
-            using (var client = new HttpClient())
+            try
             {
-                var response = await client.PostAsync(_appSettings.WebHookUrl,
-                    new StringContent(content, Encoding.UTF8, "application/json"));
+                using (var client = new HttpClient())
+                {
+                    var response = await client.PostAsync(_appSettings.WebHookUrl,
+                        new StringContent(content, Encoding.UTF8, "application/json"));
 
-                if (!response.IsSuccessStatusCode)
-                    throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}");
+                    if (!response.IsSuccessStatusCode)
+                        throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}.");
+
+                    Console.WriteLine($"A message is containing {message.Attachments.Count} event(s) has been sent successfully.");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
 

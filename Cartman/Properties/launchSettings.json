@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Cartman": {
+      "commandName": "Project",
+      "commandLineArgs": "-d 07/16/2019"
+    }
+  }
+}

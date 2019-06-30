@@ -1,26 +1,56 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Cartman.Configuration;
 using Cartman.Processor;
+using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Cartman
 {
-    internal class Program
+    internal class Options
     {
-        private static async Task Main(string[] args)
+        [Option('d', "date", 
+            SetName = "date",
+            HelpText = "Specifies a checking date for events in the calendar.")]
+        public DateTime? EventDate { get; set; }
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
         {
+            Parser.Default.ParseArguments<Options>(args)
+                    .WithParsed( opts => RunOptionsAndReturnExitCodeAsync(opts).Wait());
+        }
+
+
+        private static async Task RunOptionsAndReturnExitCodeAsync(Options opts)
+        {
+
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var processor = serviceProvider.GetRequiredService<CalendarProcessor>();
-            await processor.StartAsync();
-        }
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
+            Console.WriteLine("Cartman. Copyright (c) ONLINICO\r\nPlease use --help or -h key for more information.\r\n") ;
+
+            var eventDate = DateTime.UtcNow.Date;
+            if (opts.EventDate.HasValue)
+            {
+                eventDate = opts.EventDate.Value.Date;
+                Console.Write($"Specified date - {eventDate:D}\r\n");
+            }
+            else
+                Console.Write($"No date specified. Using today - {eventDate:D}\r\n");
+
+            await processor.StartAsync(eventDate);
+        }
 
         private static void ConfigureServices(ServiceCollection services)
         {
