@@ -67,7 +67,7 @@ namespace Cartman.Processor
                     MessageLink = url,
                     ImageUrl = imageUrl,
                     Text = Regex.Replace(item.Description, "\n{2,}", "\n")
-                        .Replace(_appSettings.SingnatureForRemoval, String.Empty)
+                        .Replace(_appSettings.SignatureForRemoval, string.Empty)
                         .Trim(),
                     Fields = new List<RocketField>
                     {
@@ -99,11 +99,11 @@ namespace Cartman.Processor
             if (!_appSettings.CalendarSources.Any())
                 return await Task.FromResult(result);
 
-            using (var client = new HttpClient())
+            _appSettings.CalendarSources.ForEach(url =>
             {
-                _appSettings.CalendarSources.ForEach(url =>
+                try
                 {
-                    try
+                    using (var client = new HttpClient())
                     {
                         var response = client.GetStringAsync(url).Result;
 
@@ -112,12 +112,12 @@ namespace Cartman.Processor
 
                         result.Add(calendar);
                     }
-                    catch (HttpRequestException ex)
-                    {
-                        _logger.LogError(ex, $"Can not retrieve calendar data for Url: {url}");
-                    }
-                });
-            }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Can not retrieve calendar data for Url: {url}");
+                }
+            });
 
             return await Task.FromResult(result);
         }
@@ -142,11 +142,11 @@ namespace Cartman.Processor
             var document = webGet.Load(url);
 
             var link = (from x in document.DocumentNode.SelectNodes("/html/head").Descendants()
-                where x.Name == "meta"
-                      && x.Attributes["property"] != null
-                      && x.Attributes["property"].Value == "og:image"
-                      && x.Attributes["content"] != null
-                select x.Attributes["content"].Value).FirstOrDefault();
+                        where x.Name == "meta"
+                              && x.Attributes["property"] != null
+                              && x.Attributes["property"].Value == "og:image"
+                              && x.Attributes["content"] != null
+                        select x.Attributes["content"].Value).FirstOrDefault();
 
             return await Task.FromResult(link);
         }

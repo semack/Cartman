@@ -11,6 +11,6 @@ namespace Cartman.Configuration
         public string UserName { get; set; }
         public string IconUrl { get; set; }
         public string Text { get; set; }
-        public string SingnatureForRemoval { get; set; }
+        public string SignatureForRemoval { get; set; }
     }
 }
