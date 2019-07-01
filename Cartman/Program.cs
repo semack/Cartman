@@ -19,10 +19,11 @@ namespace Cartman
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(opts => RunOptionsAndReturnExitCodeAsync(opts).Wait());
+                .WithParsed(async opts => await RunOptionsAndReturnExitCodeAsync(opts));
+            await Task.Yield();
         }
 
         private static async Task RunOptionsAndReturnExitCodeAsync(Options opts)
@@ -33,18 +34,11 @@ namespace Cartman
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var processor = serviceProvider.GetRequiredService<CalendarProcessor>();
-
-            Console.WriteLine(
-                "\r\nCopyright (C) 2019 ONLINICO\r\nPlease use --help or -h key for more information.\r\n");
+            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
             var eventDate = DateTime.UtcNow.Date;
-            if (opts.EventDate.HasValue)
-            {
-                eventDate = opts.EventDate.Value.Date;
-                Console.Write($"Specified date - {eventDate:D}\r\n");
-            }
-            else
-                Console.Write($"No date specified. Using today - {eventDate:D}\r\n");
+            if (opts.EventDate.HasValue) eventDate = opts.EventDate.Value.Date;
+            logger.LogInformation($"CARTMAN is running on {eventDate:D}");
 
             await processor.StartAsync(eventDate);
         }
@@ -64,6 +58,7 @@ namespace Cartman
 
             services.AddLogging(configure =>
             {
+                configure.ClearProviders();
                 configure.AddConfiguration(configuration.GetSection("Logging"));
                 configure.AddConsole();
             });

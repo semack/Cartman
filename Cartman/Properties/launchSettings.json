@@ -2,7 +2,10 @@
   "profiles": {
     "Cartman": {
       "commandName": "Project",
-      "commandLineArgs": "-d 07/16/2019"
+      "commandLineArgs": "-d 07/16/2019",
+      "environmentVariables": {
+        "Key": "Value"
+      }
     }
   }
 }

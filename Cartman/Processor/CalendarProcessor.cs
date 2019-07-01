@@ -30,6 +30,15 @@ namespace Cartman.Processor
 
         public async Task StartAsync(DateTime eventDate)
         {
+            var message = await GetMessageAsync(eventDate);
+            if (message != null)
+                await SendMessageAsync(message);
+            else
+                _logger.LogInformation("Nothing to do");
+        }
+
+        private async Task<RocketMessage> GetMessageAsync(DateTime eventDate)
+        {
             var calendars = await FetchCalendarsAsync();
 
             IDateTime date = new CalDateTime(eventDate);
@@ -39,10 +48,7 @@ namespace Cartman.Processor
                 .ToList();
 
             if (!events.Any())
-            {
-                Console.WriteLine("Nothing to do.");
-                return;
-            }
+                return null;
 
             var message = new RocketMessage
             {
@@ -87,7 +93,7 @@ namespace Cartman.Processor
                 message.Attachments.Add(attachment);
             }
 
-            await SendMessageAsync(message);
+            return message;
         }
 
         private async Task<CalendarCollection> FetchCalendarsAsync()
@@ -111,9 +117,9 @@ namespace Cartman.Processor
                         result.Add(calendar);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Can not retrieve calendar data for Url: {url}");
+                    _logger.LogError($"Can not retrieve calendar data for Url: {url}", ex);
                 }
             });
 
@@ -133,13 +139,13 @@ namespace Cartman.Processor
                     if (!response.IsSuccessStatusCode)
                         throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}.");
 
-                    Console.WriteLine(
+                    _logger.LogInformation(
                         $"A message is containing {message.Attachments.Count} event(s) has been sent successfully.");
                 }
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError("Cannot call web hook", ex);
             }
         }
 
