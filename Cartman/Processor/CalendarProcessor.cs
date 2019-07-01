@@ -32,9 +32,14 @@ namespace Cartman.Processor
         {
             var message = await GetMessageAsync(eventDate);
             if (message != null)
+            {
                 await SendMessageAsync(message);
+                _logger.LogInformation(
+                    $"A message is containing {message.Attachments.Count} event(s) for {eventDate} has been sent successfully.");
+
+            }
             else
-                _logger.LogInformation("Nothing to do");
+                _logger.LogInformation($"Nothing to do for {eventDate}. Exiting...");
         }
 
         private async Task<RocketMessage> GetMessageAsync(DateTime eventDate)
@@ -138,9 +143,6 @@ namespace Cartman.Processor
 
                     if (!response.IsSuccessStatusCode)
                         throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}.");
-
-                    _logger.LogInformation(
-                        $"A message is containing {message.Attachments.Count} event(s) has been sent successfully.");
                 }
             }
             catch (Exception ex)
