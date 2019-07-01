@@ -36,10 +36,11 @@ namespace Cartman.Processor
                 await SendMessageAsync(message);
                 _logger.LogInformation(
                     $"A message is containing {message.Attachments.Count} event(s) for {eventDate:D} has been sent successfully.");
-
             }
             else
+            {
                 _logger.LogInformation($"Nothing to do for {eventDate:D}. Exiting...");
+            }
         }
 
         private async Task<RocketMessage> GetMessageAsync(DateTime eventDate)

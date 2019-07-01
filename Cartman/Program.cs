@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Cartman.Configuration;
 using Cartman.Processor;
@@ -23,6 +24,7 @@ namespace Cartman
         {
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(async opts => await RunOptionsAndReturnExitCodeAsync(opts));
+
             await Task.Yield();
         }
 
@@ -38,7 +40,10 @@ namespace Cartman
 
             var eventDate = DateTime.UtcNow.Date;
             if (opts.EventDate.HasValue) eventDate = opts.EventDate.Value.Date;
-            logger.LogInformation($"CARTMAN is running on {eventDate:D}");
+
+            var version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                .InformationalVersion;
+            logger.LogInformation($"CARTMAN version {version}. (c) Copyright 2019 ONLINICO.");
 
             await processor.StartAsync(eventDate);
         }
