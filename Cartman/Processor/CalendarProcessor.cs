@@ -34,12 +34,12 @@ namespace Cartman.Processor
             if (message != null)
             {
                 await SendMessageAsync(message);
-                _logger.LogInformation(
+                Console.WriteLine(
                     $"A message is containing {message.Attachments.Count} event(s) for {eventDate:D} has been sent successfully.");
             }
             else
             {
-                _logger.LogInformation($"Nothing to do for {eventDate:D}. Exiting...");
+                Console.WriteLine($"Nothing to do for {eventDate:D}. Exiting...");
             }
         }
 

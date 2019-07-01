@@ -36,14 +36,13 @@ namespace Cartman
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var processor = serviceProvider.GetRequiredService<CalendarProcessor>();
-            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
             var eventDate = DateTime.UtcNow.Date;
             if (opts.EventDate.HasValue) eventDate = opts.EventDate.Value.Date;
 
             var version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 .InformationalVersion;
-            logger.LogInformation($"CARTMAN version {version}. (c) Copyright 2019 ONLINICO.");
+            Console.WriteLine($"CARTMAN version {version}. (c) Copyright 2019 ONLINICO.");
 
             await processor.StartAsync(eventDate);
         }
