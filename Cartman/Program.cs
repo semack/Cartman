@@ -22,10 +22,11 @@ namespace Cartman
     {
         public static async Task Main(string[] args)
         {
+            Options options = null;
             Parser.Default.ParseArguments<Options>(args)
-                .WithParsed(async opts => await RunOptionsAndReturnExitCodeAsync(opts));
+                .WithParsed(opts => options = opts);
 
-            await Task.Yield();
+            await RunOptionsAndReturnExitCodeAsync(options);
         }
 
         private static async Task RunOptionsAndReturnExitCodeAsync(Options opts)
