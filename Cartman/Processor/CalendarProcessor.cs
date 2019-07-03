@@ -125,7 +125,7 @@ namespace Cartman.Processor
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Can not retrieve calendar data for Url: {url}", ex);
+                    _logger.LogError($"Can not retrieve calendar data for the Url: {url}", ex);
                 }
             });
 
@@ -143,12 +143,12 @@ namespace Cartman.Processor
                         new StringContent(content, Encoding.UTF8, "application/json"));
 
                     if (!response.IsSuccessStatusCode)
-                        throw new HttpRequestException($"WebHook call failed. Status code {response.StatusCode}.");
+                        throw new HttpRequestException($"The WebHook {_appSettings.WebHookUrl} call failed. Status code {response.StatusCode}.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError("Cannot call web hook", ex);
+                _logger.LogError("Cannot call the web hook", ex);
             }
         }
 
